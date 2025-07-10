@@ -24,8 +24,8 @@
 #ifndef IPV4_H
 #define IPV4_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 // Section 3.2 defines Address Formats as:
 // High Order Bits   Format                           Class
@@ -64,14 +64,14 @@ typedef struct {
 //     010 - Immediate
 //     001 - Priority
 //     000 - Routine
-typedef struct {
-  bool precedence[3];
-  bool d;
-  bool t;
-  bool r;
-  bool _reserved_future1;
-  bool _reserved_future2;
-} TypeOfService;
+// typedef struct {
+//   bool precedence[3];
+//   bool d;
+//   bool t;
+//   bool r;
+//   bool _reserved_future1;
+//   bool _reserved_future2;
+// } TypeOfService;
 
 // As defined in the rfc again... :
 //     Various Control Flags.
@@ -100,7 +100,7 @@ typedef struct {
 // Implemented following the 3.1 Section of the rfc
 typedef struct {
   uint8_t version_ihl;
-  TypeOfService type_of_service;
+  uint8_t type_of_service;
   uint16_t total_length;
   uint16_t identification;
   // Flags -> 3 and fragment_offset: 13
@@ -113,15 +113,21 @@ typedef struct {
   Options options;
 } IPV4Header;
 
-#define HEADER_IHL(header) ((header)->version_ihl & 0b00001111)
+#define HEADER_IHL(header) ((header)->version_ihl & 0b1111)
+#define HEADER_VER(header) ((header)->version_ihl >> 4)
+#define HEADER_TOS_PREC(header) ((header)->type_of_service & 0b111)
+#define HEADER_TOS_D(header) (((header)->type_of_service >> 3) & 0b1)
+#define HEADER_TOS_T(header) (((header)->type_of_service >> 4) & 0b1)
+#define HEADER_TOS_R(header) (((header)->type_of_service >> 5) & 0b1)
 #define HEADER_VER(header) ((header)->version_ihl >> 4)
 #define HEADER_FLAGS(header) ((header)->fragment_offset_flags >> 13)
-#define HEADER_FRAG_OFFSET(header) ((header)->fragment_offset_flags & 0b0001111111111111)
+#define HEADER_FRAG_OFFSET(header)                                             \
+  ((header)->fragment_offset_flags & 0b1111111111111)
 
 // this functions generates a valid
 // ipv4 header for testing pursposes
-void generate_ipv4_header(uint8_t *buf);
+void generate_random_ipv4_header(uint8_t *buf);
 
-IPV4Header* ipv4_from_buffer(uint8_t* buffer, unsigned int buffer_len);
+IPV4Header *ipv4_from_buffer(uint8_t *buffer, unsigned int buffer_len);
 
 #endif
